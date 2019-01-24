@@ -1,6 +1,8 @@
 package xml2csv
 
-import "errors"
+import (
+	"errors"
+)
 
 type writer struct {
 	buf []byte
@@ -16,7 +18,7 @@ func newWriter(target []byte) *writer {
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
-	if len(w.buf)-w.curr > len(p) {
+	if len(w.buf)-w.curr < len(p) {
 		return 0, errors.New("Buffer overflow")
 	}
 
