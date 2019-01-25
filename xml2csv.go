@@ -11,6 +11,9 @@ import (
 // XLSXReader implements the io.Reader interface
 // row by row converting an XLSX sheet to CSV
 type XLSXReader struct {
+	Align     bool // Align empty fields on the end to header length (see with_empty_fields)
+	headerLen int
+
 	data *xlsx.Sheet
 
 	row int // Current row
@@ -59,6 +62,13 @@ func (r *XLSXReader) Read(b []byte) (n int, err error) {
 		return 0, err
 	}
 
+	// If the first row was just read (header must be in first row)
+	if r.row == 1 {
+		r.headerLen = len(row)
+	} else if r.Align && len(row) < r.headerLen {
+		row = append(row, make([]string, r.headerLen-len(row))...)
+	}
+
 	r.buff.Reset(b)
 
 	err = r.writer.Write(row)
@@ -68,7 +78,7 @@ func (r *XLSXReader) Read(b []byte) (n int, err error) {
 
 	r.writer.Flush()
 
-	return r.buff.Len(), err
+	return r.buff.Len(), nil
 }
 
 func (r *XLSXReader) nextRow() ([]string, error) {
