@@ -1,4 +1,4 @@
-package xml2csv
+package xlsx2csv
 
 import (
 	"bytes"
