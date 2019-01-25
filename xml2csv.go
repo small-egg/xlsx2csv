@@ -49,7 +49,7 @@ func NewReader(data []byte, sheet string, comma rune) (*XLSXReader, error) {
 // of next row in XLSX sheet to b
 // IMPORTANT: len(b) must be >= than the sum of lengths
 // of byte representation of each cell in a row
-func (r XLSXReader) Read(b []byte) (n int, err error) {
+func (r *XLSXReader) Read(b []byte) (n int, err error) {
 	if r.row >= len(r.data.Rows) {
 		return 0, io.EOF
 	}
@@ -62,6 +62,12 @@ func (r XLSXReader) Read(b []byte) (n int, err error) {
 	r.buff.Reset(b)
 
 	err = r.writer.Write(row)
+	if err != nil {
+		return 0, err
+	}
+
+	r.writer.Flush()
+
 	return r.buff.Len(), err
 }
 

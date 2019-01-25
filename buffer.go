@@ -29,7 +29,7 @@ func (w *writer) Write(p []byte) (n int, err error) {
 }
 
 func (w writer) Len() int {
-	return len(w.buf)
+	return w.curr
 }
 
 func (w *writer) Reset(target []byte) {
