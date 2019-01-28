@@ -1,6 +1,7 @@
 package xlsx2csv
 
 import (
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"io"
@@ -18,7 +19,7 @@ type XLSXReader struct {
 
 	row int // Current row
 
-	buff   *writer
+	buff   *bytes.Buffer
 	writer *csv.Writer
 }
 
@@ -34,7 +35,7 @@ func NewReader(data []byte, sheet string, comma rune) (*XLSXReader, error) {
 		return nil, errors.New("data doesn't contains such sheet")
 	}
 
-	buff := newWriter(nil)
+	buff := bytes.NewBuffer(nil)
 
 	csvWriter := csv.NewWriter(buff)
 	csvWriter.Comma = comma
@@ -50,9 +51,12 @@ func NewReader(data []byte, sheet string, comma rune) (*XLSXReader, error) {
 
 // Read writes comma-separated byte representation
 // of next row in XLSX sheet to b
-// IMPORTANT: len(b) must be >= than the sum of lengths
-// of byte representation of each cell in a row
-func (r *XLSXReader) Read(b []byte) (n int, err error) {
+func (r *XLSXReader) Read(p []byte) (n int, err error) {
+	// Read to the end of current row
+	if r.buff.Len() != 0 {
+		return r.buff.Read(p)
+	}
+
 	if r.row >= len(r.data.Rows) {
 		return 0, io.EOF
 	}
@@ -69,8 +73,6 @@ func (r *XLSXReader) Read(b []byte) (n int, err error) {
 		row = append(row, make([]string, r.headerLen-len(row))...)
 	}
 
-	r.buff.Reset(b)
-
 	err = r.writer.Write(row)
 	if err != nil {
 		return 0, err
@@ -78,7 +80,7 @@ func (r *XLSXReader) Read(b []byte) (n int, err error) {
 
 	r.writer.Flush()
 
-	return r.buff.Len(), nil
+	return r.buff.Read(p)
 }
 
 func (r *XLSXReader) nextRow() ([]string, error) {
