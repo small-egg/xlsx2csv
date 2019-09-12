@@ -58,7 +58,7 @@ func TestConvertXLSXToCSV(t *testing.T) {
 	for _, testCase := range data {
 		rawXLSX := readFile(testCase.file, assert)
 
-		reader, err := NewReader(rawXLSX, "sheet", ',')
+		reader, err := NewReader(rawXLSX, WithName("sheet"), ',')
 		assert.NoError(err)
 		reader.Align = testCase.align
 

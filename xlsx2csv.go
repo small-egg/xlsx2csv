@@ -3,7 +3,6 @@ package xlsx2csv
 import (
 	"bytes"
 	"encoding/csv"
-	"errors"
 	"io"
 
 	"github.com/tealeg/xlsx"
@@ -24,15 +23,15 @@ type XLSXReader struct {
 }
 
 // NewReader creates instance of XLSXReader for specified sheet
-func NewReader(data []byte, sheet string, comma rune) (*XLSXReader, error) {
+func NewReader(data []byte, getSheet SheetGetter, comma rune) (*XLSXReader, error) {
 	file, err := xlsx.OpenBinary(data)
 	if err != nil {
 		return nil, err
 	}
 
-	res, ok := file.Sheet[sheet]
-	if !ok {
-		return nil, errors.New("data doesn't contains such sheet")
+	sheet, err := getSheet(file)
+	if err != nil {
+		return nil, err
 	}
 
 	buff := bytes.NewBuffer(nil)
@@ -41,7 +40,7 @@ func NewReader(data []byte, sheet string, comma rune) (*XLSXReader, error) {
 	csvWriter.Comma = comma
 
 	reader := &XLSXReader{
-		data:   res,
+		data:   sheet,
 		buff:   buff,
 		writer: csvWriter,
 	}
