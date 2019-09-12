@@ -19,7 +19,7 @@ func main() {
         log.Fatalln(err)
     }
 
-    reader, err := xlsx2csv.NewReader(raw, "sheet", ',')
+    reader, err := xlsx2csv.NewReader(raw, xlsx2csv.WithName("sheet"), ',')
     if err != nil {
         log.Fatalln(err)
     }
