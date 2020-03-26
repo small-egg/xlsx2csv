@@ -89,23 +89,18 @@ func (r *XLSXReader) nextRow() ([]string, error) {
 			return nil, io.EOF
 		}
 
-		var err error
-		row, err = r.data.Row(r.row)
-		if err != nil {
-			return nil, err
-		}
+		row = r.data.Row(r.row)
 		r.row++
 	}
 
-	res := make([]string, 0, r.data.MaxCol)
-	for i :=0; i < r.data.MaxCol; i++ {
-		c := row.GetCell(i)
-		val, err := c.FormattedValue()
-			if err != nil {
-				res = append(res, err.Error())
-			} else {
-				res = append(res, val)
-			}
+	res := make([]string, 0, len(row.Cells))
+	for _, cell := range row.Cells {
+		val, err := cell.FormattedValue()
+		if err != nil {
+			res = append(res, err.Error())
+		} else {
+			res = append(res, val)
+		}
 	}
 
 	return res, nil
