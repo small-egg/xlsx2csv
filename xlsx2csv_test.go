@@ -51,6 +51,15 @@ func TestConvertXLSXToCSV(t *testing.T) {
 			align:   false,
 			errText: "record on line 3: wrong number of fields",
 		},
+		{
+			file:  "testfiles/with_unicode.xlsx",
+			align: true,
+			result: [][]string{
+				{"Header1", "Header2", "Header3"},
+				{"a", "a", "Bodrum'un Ortakent bölgesinde denize 150 metre mesafede kurulmuş her-şey-dahil bir tesis olan Medisun Hotel plaj üzerinde özel"},
+				{"b", "b", "a"},
+			},
+		},
 	}
 
 	assert := assert.New(t)

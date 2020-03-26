@@ -3,7 +3,7 @@ package xlsx2csv
 import (
 	"errors"
 
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v2"
 )
 
 var (

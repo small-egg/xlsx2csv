@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v2"
 )
 
 // XLSXReader implements the io.Reader interface
@@ -56,7 +56,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 		return r.buff.Read(p)
 	}
 
-	if r.row >= len(r.data.Rows) {
+	if r.row >= r.data.MaxRow {
 		return 0, io.EOF
 	}
 
@@ -85,7 +85,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 func (r *XLSXReader) nextRow() ([]string, error) {
 	var row *xlsx.Row
 	for row == nil {
-		if r.row >= len(r.data.Rows) {
+		if r.row >= r.data.MaxRow {
 			return nil, io.EOF
 		}
 
