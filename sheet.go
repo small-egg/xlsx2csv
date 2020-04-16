@@ -10,9 +10,9 @@ var (
 	sheetNotFoundErr = errors.New("requested sheet not found")
 )
 
-type SheetGetter func(file *xlsx.File) (*xlsx.Sheet, error)
+type SheetSelector func(file *xlsx.File) (*xlsx.Sheet, error)
 
-func WithName(name string) SheetGetter {
+func SheetByName(name string) SheetSelector {
 	return func(file *xlsx.File) (*xlsx.Sheet, error) {
 		sheet, ok := file.Sheet[name]
 		if !ok {
@@ -23,7 +23,7 @@ func WithName(name string) SheetGetter {
 	}
 }
 
-func WithIndex(i int) SheetGetter {
+func SheetByIndex(i int) SheetSelector {
 	return func(file *xlsx.File) (*xlsx.Sheet, error) {
 		if i < 0 || i >= len(file.Sheets) {
 			return nil, sheetNotFoundErr
@@ -33,6 +33,6 @@ func WithIndex(i int) SheetGetter {
 	}
 }
 
-func OnlyFirstSheet() SheetGetter {
-	return WithIndex(0)
+func FirstSheet() SheetSelector {
+	return SheetByIndex(0)
 }

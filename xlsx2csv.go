@@ -9,9 +9,13 @@ import (
 )
 
 // XLSXReader implements the io.Reader interface
-// row by row converting an XLSX sheet to CSV
+// row by row converting an XLSX sheet to CSV.
 type XLSXReader struct {
-	Align     bool // Align empty fields on the end to header length (see with_empty_fields)
+	cfg config
+
+	// Deprecated. Use WithAlign option instead.
+	Align bool
+
 	headerLen int
 
 	data *xlsx.Sheet
@@ -22,14 +26,19 @@ type XLSXReader struct {
 	writer *csv.Writer
 }
 
-// NewReader creates instance of XLSXReader for specified sheet
-func NewReader(data []byte, getSheet SheetGetter, comma rune) (*XLSXReader, error) {
-	file, err := xlsx.OpenBinary(data)
+// New creates instance of XLSXReader
+func New(raw []byte, options ...Option) (*XLSXReader, error) {
+	file, err := xlsx.OpenBinary(raw)
 	if err != nil {
 		return nil, err
 	}
 
-	sheet, err := getSheet(file)
+	cfg := defaultConfig
+	for _, option := range options {
+		option(&cfg)
+	}
+
+	sheet, err := cfg.getSheet(file)
 	if err != nil {
 		return nil, err
 	}
@@ -37,15 +46,20 @@ func NewReader(data []byte, getSheet SheetGetter, comma rune) (*XLSXReader, erro
 	buff := bytes.NewBuffer(nil)
 
 	csvWriter := csv.NewWriter(buff)
-	csvWriter.Comma = comma
+	csvWriter.Comma = cfg.comma
 
 	reader := &XLSXReader{
-		data:   sheet,
-		buff:   buff,
+		data: sheet,
+		buff: buff,
 		writer: csvWriter,
 	}
 
 	return reader, nil
+}
+
+// Deprecated. Use New instead
+func NewReader(data []byte, getSheet SheetSelector, comma rune) (*XLSXReader, error) {
+	return New(data, SetSheetSelector(getSheet), SetComma(comma))
 }
 
 // Read writes comma-separated byte representation
@@ -68,7 +82,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 	// If the first row was just read (header must be in first row)
 	if r.row == 1 {
 		r.headerLen = len(row)
-	} else if r.Align && len(row) < r.headerLen {
+	} else if (r.cfg.align || r.Align) && len(row) < r.headerLen {
 		row = append(row, make([]string, r.headerLen-len(row))...)
 	}
 
