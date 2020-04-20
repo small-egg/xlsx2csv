@@ -48,11 +48,11 @@ func TestConvertXLSXToCSV(t *testing.T) {
 				{"", "four"},
 			},
 		},
-		//{
-		//	file:    "testfiles/with_empty_cells.xlsx",
-		//	align:   false,
-		//	errText: "record on line 3: wrong number of fields",
-		//},
+		{
+			file:    "testfiles/with_empty_cells.xlsx",
+			align:   false,
+			errText: "record on line 3: wrong number of fields",
+		},
 		{
 			file:  "testfiles/with_unicode.xlsx",
 			align: true,

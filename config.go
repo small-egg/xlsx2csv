@@ -3,7 +3,7 @@ package xlsx2csv
 import (
 	"errors"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
 var (

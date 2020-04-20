@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
 // XLSXReader implements the io.Reader interface
@@ -35,7 +35,10 @@ func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader,
 	}
 
 	buff := bytes.NewBuffer(nil)
-	rows := file.GetRows(sheet)
+	rows, err := file.GetRows(sheet)
+	if err != nil {
+		return nil, err
+	}
 	csvWriter := csv.NewWriter(buff)
 	csvWriter.Comma = comma
 
