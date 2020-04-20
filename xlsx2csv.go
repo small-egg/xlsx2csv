@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 	"io"
 
-	"github.com/tealeg/xlsx/v2"
+	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
 // XLSXReader implements the io.Reader interface
@@ -14,7 +14,7 @@ type XLSXReader struct {
 	Align     bool // Align empty fields on the end to header length (see with_empty_fields)
 	headerLen int
 
-	data *xlsx.Sheet
+	data [][]string
 
 	row int // Current row
 
@@ -23,8 +23,8 @@ type XLSXReader struct {
 }
 
 // NewReader creates instance of XLSXReader for specified sheet
-func NewReader(data []byte, getSheet SheetGetter, comma rune) (*XLSXReader, error) {
-	file, err := xlsx.OpenBinary(data)
+func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader, error) {
+	file, err := excelize.OpenReader(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -35,17 +35,17 @@ func NewReader(data []byte, getSheet SheetGetter, comma rune) (*XLSXReader, erro
 	}
 
 	buff := bytes.NewBuffer(nil)
-
+	rows := file.GetRows(sheet)
 	csvWriter := csv.NewWriter(buff)
 	csvWriter.Comma = comma
 
-	reader := &XLSXReader{
-		data:   sheet,
+	newReader := &XLSXReader{
+		data:   rows,
 		buff:   buff,
 		writer: csvWriter,
 	}
 
-	return reader, nil
+	return newReader, nil
 }
 
 // Read writes comma-separated byte representation
@@ -56,7 +56,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 		return r.buff.Read(p)
 	}
 
-	if r.row >= r.data.MaxRow {
+	if r.row >= len(r.data) {
 		return 0, io.EOF
 	}
 
@@ -83,24 +83,20 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 }
 
 func (r *XLSXReader) nextRow() ([]string, error) {
-	var row *xlsx.Row
+	var row []string
 	for row == nil {
-		if r.row >= r.data.MaxRow {
+		if r.row >= len(r.data) {
 			return nil, io.EOF
 		}
 
-		row = r.data.Row(r.row)
+		row = r.data[r.row]
 		r.row++
 	}
 
-	res := make([]string, 0, len(row.Cells))
-	for _, cell := range row.Cells {
-		val, err := cell.FormattedValue()
-		if err != nil {
-			res = append(res, err.Error())
-		} else {
-			res = append(res, val)
-		}
+	res := make([]string, 0, len(row))
+	for _, cell := range row {
+			res = append(res, cell)
+
 	}
 
 	return res, nil
