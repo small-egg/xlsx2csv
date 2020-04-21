@@ -42,13 +42,13 @@ func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader,
 	csvWriter := csv.NewWriter(buff)
 	csvWriter.Comma = comma
 
-	newReader := &XLSXReader{
+	xlsxReader := &XLSXReader{
 		data:   rows,
 		buff:   buff,
 		writer: csvWriter,
 	}
 
-	return newReader, nil
+	return xlsxReader, nil
 }
 
 // Read writes comma-separated byte representation

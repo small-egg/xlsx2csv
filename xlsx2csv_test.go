@@ -91,8 +91,5 @@ func readFile(path string, assert *assert.Assertions) io.ReadCloser {
 	file, err := os.Open(path)
 	assert.NoError(err)
 
-	//data, err := ioutil.ReadAll(file)
-	//assert.NoError(err)
-
 	return file
 }
