@@ -20,14 +20,13 @@ func WithName(name string) SheetGetter {
 
 func WithIndex(i int) SheetGetter {
 	return func(file *excelize.File) (string, error) {
-		if i < 0 || i >= len(file.Sheet) {
+		if i < 0 || i > file.SheetCount {
 			return "", sheetNotFoundErr
 		}
-
 		return file.GetSheetName(i), nil
 	}
 }
 
 func OnlyFirstSheet() SheetGetter {
-	return WithIndex(0)
+	return WithIndex(1)
 }
