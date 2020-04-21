@@ -3,7 +3,6 @@ package xlsx2csv
 import (
 	"bytes"
 	"encoding/csv"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -75,7 +74,7 @@ func TestConvertXLSXToCSV(t *testing.T) {
 
 		rawCSV, err := ioutil.ReadAll(reader)
 		assert.NoError(err)
-		fmt.Println(string(rawCSV))
+		
 		csvReader := csv.NewReader(bytes.NewReader(rawCSV))
 		records, err := csvReader.ReadAll()
 		if len(testCase.errText) == 0 {
