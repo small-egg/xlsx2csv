@@ -18,15 +18,18 @@ func WithName(name string) SheetGetter {
 	}
 }
 
-func WithIndex(i int) SheetGetter {
-	return func(file *excelize.File) (string, error) {
-		if i < 0 || i > file.SheetCount {
-			return "", sheetNotFoundErr
-		}
-		return file.GetSheetName(i), nil
-	}
-}
+// implement when we have file.GetSheetList in API
+//func WithIndex(i int) SheetGetter {
+//	return func(file *excelize.File) (string, error) {
+//		if i < 0 || i > file.SheetCount {
+//			return "", sheetNotFoundErr
+//		}
+//		return file.GetSheetName(i), nil
+//	}
+//}
 
 func OnlyFirstSheet() SheetGetter {
-	return WithIndex(1)
+	return func(file *excelize.File) (string, error) {
+		return file.GetSheetName(file.GetActiveSheetIndex()), nil
+	}
 }
