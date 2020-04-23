@@ -79,15 +79,15 @@ func TestConvertXLSXToCSV(t *testing.T) {
 		assert.NoError(err)
 
 		rawCSV, err := ioutil.ReadAll(reader)
-		assert.NoError(err)
+		assert.NoError(err, testCase.file)
 
 		csvReader := csv.NewReader(bytes.NewReader(rawCSV))
 		records, err := csvReader.ReadAll()
 		if len(testCase.errText) == 0 {
-			assert.NoError(err)
+			assert.NoError(err, testCase.file)
 			assert.Equal(testCase.result, records)
 		} else {
-			assert.EqualError(err, testCase.errText)
+			assert.EqualError(err, testCase.errText, testCase.file)
 		}
 	}
 }

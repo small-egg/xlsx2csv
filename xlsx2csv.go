@@ -52,6 +52,7 @@ func New(reader io.Reader, options ...Option) (*XLSXReader, error) {
 	csvWriter.Comma = cfg.comma
 
 	xlsxReader := &XLSXReader{
+		cfg:    cfg,
 		data:   rows,
 		buff:   buff,
 		writer: csvWriter,
