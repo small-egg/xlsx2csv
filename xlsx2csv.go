@@ -9,9 +9,13 @@ import (
 )
 
 // XLSXReader implements the io.Reader interface
-// row by row converting an XLSX sheet to CSV
+// row by row converting an XLSX sheet to CSV.
 type XLSXReader struct {
-	Align     bool // Align empty fields on the end to header length (see with_empty_fields)
+	cfg config
+
+	// Deprecated. Use WithAlign option instead.
+	Align bool
+
 	headerLen int
 
 	data [][]string
@@ -22,14 +26,19 @@ type XLSXReader struct {
 	writer *csv.Writer
 }
 
-// NewReader creates instance of XLSXReader for specified sheet
-func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader, error) {
+// New creates instance of XLSXReader
+func New(reader io.Reader, options ...Option) (*XLSXReader, error) {
 	file, err := excelize.OpenReader(reader)
 	if err != nil {
 		return nil, err
 	}
 
-	sheet, err := getSheet(file)
+	cfg := defaultConfig
+	for _, option := range options {
+		option(&cfg)
+	}
+
+	sheet, err := cfg.getSheet(file)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +49,7 @@ func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader,
 		return nil, err
 	}
 	csvWriter := csv.NewWriter(buff)
-	csvWriter.Comma = comma
+	csvWriter.Comma = cfg.comma
 
 	xlsxReader := &XLSXReader{
 		data:   rows,
@@ -49,6 +58,11 @@ func NewReader(reader io.Reader, getSheet SheetGetter, comma rune) (*XLSXReader,
 	}
 
 	return xlsxReader, nil
+}
+
+// Deprecated. Use New instead
+func NewReader(reader io.Reader, getSheet SheetSelector, comma rune) (*XLSXReader, error) {
+	return New(reader, SetSheetSelector(getSheet), SetComma(comma))
 }
 
 // Read writes comma-separated byte representation
@@ -71,7 +85,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 	// If the first row was just read (header must be in first row)
 	if r.row == 1 {
 		r.headerLen = len(row)
-	} else if r.Align && len(row) < r.headerLen {
+	} else if (r.cfg.align || r.Align) && len(row) < r.headerLen {
 		row = append(row, make([]string, r.headerLen-len(row))...)
 	}
 
@@ -98,7 +112,7 @@ func (r *XLSXReader) nextRow() ([]string, error) {
 
 	res := make([]string, 0, len(row))
 	for _, cell := range row {
-			res = append(res, cell)
+		res = append(res, cell)
 
 	}
 

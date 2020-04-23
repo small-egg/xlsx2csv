@@ -67,14 +67,20 @@ func TestConvertXLSXToCSV(t *testing.T) {
 
 	for _, testCase := range data {
 		rawXLSX := readFile(testCase.file, assert)
-		defer rawXLSX.Close()
-		reader, err := NewReader(rawXLSX, WithName("sheet"), ',')
+		options := []Option{
+			SetSheetSelector(SheetByName("sheet")),
+			SetComma(','),
+		}
+		if testCase.align {
+			options = append(options, WithAlign())
+		}
+
+		reader, err := New(rawXLSX, options...)
 		assert.NoError(err)
-		reader.Align = testCase.align
 
 		rawCSV, err := ioutil.ReadAll(reader)
 		assert.NoError(err)
-		
+
 		csvReader := csv.NewReader(bytes.NewReader(rawCSV))
 		records, err := csvReader.ReadAll()
 		if len(testCase.errText) == 0 {
