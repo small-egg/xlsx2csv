@@ -65,10 +65,11 @@ func NewReader(data []byte, getSheet SheetSelector, comma rune) (*XLSXReader, er
 // Read writes comma-separated byte representation
 // of next row in XLSX sheet to b
 func (r *XLSXReader) Read(p []byte) (n int, err error) {
-	switch {
-	case r.buff.Len() != 0: // Read to the end of current row
+	if r.buff.Len() != 0 {
 		return r.buff.Read(p)
-	case r.row >= r.data.MaxRow:
+	}
+
+	if r.row >= r.data.MaxRow {
 		return 0, io.EOF
 	}
 
@@ -82,9 +83,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 		r.headerLen = len(row)
 	case (r.cfg.align || r.Align) && len(row) < r.headerLen:
 		row = append(row, make([]string, r.headerLen-len(row))...)
-	}
-
-	if len(row) > r.headerLen {
+	case len(row) > r.headerLen:
 		row = row[:r.headerLen]
 	}
 
