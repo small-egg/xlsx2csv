@@ -49,8 +49,8 @@ func New(raw []byte, options ...Option) (*XLSXReader, error) {
 	csvWriter.Comma = cfg.comma
 
 	reader := &XLSXReader{
-		data: sheet,
-		buff: buff,
+		data:   sheet,
+		buff:   buff,
 		writer: csvWriter,
 	}
 
@@ -65,7 +65,6 @@ func NewReader(data []byte, getSheet SheetSelector, comma rune) (*XLSXReader, er
 // Read writes comma-separated byte representation
 // of next row in XLSX sheet to b
 func (r *XLSXReader) Read(p []byte) (n int, err error) {
-	// Read to the end of current row
 	if r.buff.Len() != 0 {
 		return r.buff.Read(p)
 	}
@@ -79,15 +78,16 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 		return 0, err
 	}
 
-	// If the first row was just read (header must be in first row)
-	if r.row == 1 {
+	switch {
+	case r.row == 1: // If the first row was just read (header must be in first row)
 		r.headerLen = len(row)
-	} else if (r.cfg.align || r.Align) && len(row) < r.headerLen {
+	case (r.cfg.align || r.Align) && len(row) < r.headerLen:
 		row = append(row, make([]string, r.headerLen-len(row))...)
+	case len(row) > r.headerLen:
+		row = row[:r.headerLen]
 	}
 
-	err = r.writer.Write(row)
-	if err != nil {
+	if err := r.writer.Write(row); err != nil {
 		return 0, err
 	}
 
