@@ -3,9 +3,8 @@ package xlsx2csv
 import (
 	"bytes"
 	"encoding/csv"
-	"io"
-
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"io"
 )
 
 // XLSXReader implements the io.Reader interface

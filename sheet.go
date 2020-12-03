@@ -1,13 +1,9 @@
 package xlsx2csv
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
-)
-
-var (
-	sheetNotFoundErr = errors.New("requested sheet not found")
 )
 
 type SheetSelector func(file *excelize.File) (string, error)
@@ -21,7 +17,7 @@ func SheetByName(name string) SheetSelector {
 func SheetByIndex(i int) SheetSelector {
 	return func(file *excelize.File) (string, error) {
 		if i < 0 || i > file.SheetCount {
-			return "", sheetNotFoundErr
+			return "", excelize.ErrSheetNotExist{SheetName: fmt.Sprintf("sheet %d", i)}
 		}
 
 		return file.GetSheetList()[i], nil

@@ -15,6 +15,7 @@ func TestConvertXLSXToCSV(t *testing.T) {
 	type testData struct {
 		file  string
 		align bool
+		exist bool
 
 		result  [][]string
 		errText string
@@ -22,7 +23,8 @@ func TestConvertXLSXToCSV(t *testing.T) {
 
 	data := []testData{
 		{
-			file: "testfiles/simple.xlsx",
+			file:  "testfiles/simple.xlsx",
+			exist: true,
 			result: [][]string{
 				{"Header1", "Header2"},
 				{"Cell1", "Cell2"},
@@ -30,7 +32,8 @@ func TestConvertXLSXToCSV(t *testing.T) {
 			},
 		},
 		{
-			file: "testfiles/with_comma.xlsx",
+			file:  "testfiles/with_comma.xlsx",
+			exist: true,
 			result: [][]string{
 				{"Header1", "Header2", "Header3"},
 				{"1", "x,", "2"},
@@ -40,6 +43,7 @@ func TestConvertXLSXToCSV(t *testing.T) {
 		{
 			file:  "testfiles/with_empty_cells.xlsx",
 			align: true,
+			exist: true,
 			result: [][]string{
 				{"Header1", "Header2"},
 				{"one", "two"},
@@ -50,11 +54,19 @@ func TestConvertXLSXToCSV(t *testing.T) {
 		{
 			file:    "testfiles/with_empty_cells.xlsx",
 			align:   false,
+			exist:   true,
 			errText: "record on line 3: wrong number of fields",
+		},
+		{
+			file:    "testfiles/sheet_not_exist.xlsx",
+			align:   false,
+			exist:   false,
+			errText: "sheet sheet is not exist",
 		},
 		{
 			file:  "testfiles/with_unicode.xlsx",
 			align: true,
+			exist: true,
 			result: [][]string{
 				{"Header1", "Header2", "Header3"},
 				{"a", "a", "Bodrum'un Ortakent bölgesinde denize 150 metre mesafede kurulmuş her-şey-dahil bir tesis olan Medisun Hotel plaj üzerinde özel"},
@@ -76,6 +88,10 @@ func TestConvertXLSXToCSV(t *testing.T) {
 		}
 
 		reader, err := New(rawXLSX, options...)
+		if testCase.exist == false {
+			assert.EqualError(err, testCase.errText, testCase.file)
+			continue
+		}
 		assert.NoError(err)
 
 		rawCSV, err := ioutil.ReadAll(reader)
