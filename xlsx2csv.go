@@ -13,9 +13,6 @@ import (
 type XLSXReader struct {
 	cfg config
 
-	// Deprecated. Use WithAlign option instead.
-	Align bool
-
 	headerLen int
 
 	data [][]string
@@ -59,11 +56,6 @@ func New(reader io.Reader, options ...Option) (*XLSXReader, error) {
 	}
 
 	return xlsxReader, nil
-}
-
-// Deprecated. Use New instead
-func NewReader(reader io.Reader, getSheet SheetSelector, comma rune) (*XLSXReader, error) {
-	return New(reader, SetSheetSelector(getSheet), SetComma(comma))
 }
 
 // Read writes comma-separated byte representation
