@@ -14,12 +14,7 @@ func main() {
     }
     defer file.Close()
 
-    raw, err := ioutil.ReadAll(file)
-    if err != nil {
-        log.Fatalln(err)
-    }
-
-    reader, err := xlsx2csv.NewReader(raw, xlsx2csv.WithName("sheet"), ',')
+    reader, err := xlsx2csv.NewReader(file, xlsx2csv.WithName("sheet"), ',')
     if err != nil {
         log.Fatalln(err)
     }
