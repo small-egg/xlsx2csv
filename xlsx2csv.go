@@ -77,7 +77,7 @@ func (r *XLSXReader) Read(p []byte) (n int, err error) {
 	switch {
 	case r.row == 1: // If the first row was just read (header must be in first row)
 		r.headerLen = len(row)
-	case (r.cfg.align || r.Align) && len(row) < r.headerLen:
+	case r.cfg.align && len(row) < r.headerLen:
 		row = append(row, make([]string, r.headerLen-len(row))...)
 	case len(row) > r.headerLen:
 		row = row[:r.headerLen]
